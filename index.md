@@ -1,37 +1,124 @@
-## Welcome to GitHub Pages
+## Simult
 
-You can use the [editor on GitHub](https://github.com/simult/simult.github.io/edit/master/index.md) to maintain and preview the content for your website in Markdown files.
+Free and open source smart load balancer.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+Simult is secure and smart application load balancer. It can distribute incoming requests to the backend servers. There
+are 3 different distribution mode that you can use which are Roundrobin, Leastconn and Affinitykey.
 
-### Markdown
+It has designed to used with prometheus hence exports rich metrics.
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+### Configuration
+
+Simult can be configured with a yaml file and the new configuration can be applied on the fly. An example configuration yaml:
 
 ```markdown
-Syntax highlighted code block
+global:
+  rlimitnofile: 262144
+  promresetonreload: no
 
-# Header 1
-## Header 2
-### Header 3
+defaults:
+  tlsparams:
+    certpath: ssl/
+    keypath: ssl/
 
-- Bulleted
-- List
+frontends:
+  main:
+    timeout: 305s
+    keepalivetimeout: 30s
+    listeners:
+      - address: 0.0.0.0:80
+      - address: 0.0.0.0:443
+        tls: yes
+    routes:
+      - host: empty.site.io
+        backend: empty
 
-1. Numbered
-2. List
+      - host: simult.server.io
+        path: "/actuator/*"
+      - host: simult.server.io
+        path: "/add/events/*"
+        backend: shop
+        backup: empty
+      - host: simult.server.io
+        backend: shop
+        backup: empty
 
-**Bold** and _Italic_ and `Code` text
+      - host: test.simult.io
+        path: "/actuator/*"
+      - host: test.simult.io
+        path: "/mail/hook/*"
+        backend: test
 
-[Link](url) and ![Image](src)
+backends:
+  empty:
+    timeout: 10s
+    healthcheck: empty
+    servers:
+      - "http://<ip1>"
+      - "http://<ip2>"
+
+  shop:
+    servermaxconn: 100
+    servermaxidleconn: 100
+    timeout: 10s
+    reqheaders:
+      Host: simult.server.io
+    serverhashsecret: somehash
+    healthcheck: shop
+    mode: affinitykey
+    affinitykey:
+      source: "httpheader: a-custom-header"
+      maxservers: 4
+      threshold: 2
+    servers:
+      - "http://<someip1>"
+      - "http://<someip2>"
+      - "http://<someip3>"
+      - "http://<someip4>"
+      - "http://<someip5>"
+
+  test:
+    timeout: 10s
+    reqheaders:
+      Host: test.simult.io
+    healthcheck: test
+    servers:
+      - "http://<testip1>"
+  
+healthchecks:
+  empty:
+    http:
+      path: /health
+      host: empty.site.io
+      interval: 1s
+      timeout: 1s
+      fall: 3
+      rise: 2
+
+  shop:
+    http:
+      path: /foo/health
+      host: simult.server.io
+      interval: 1s
+      timeout: 1s
+      fall: 3
+      rise: 2
+      resp: '{"status":"UP"}'
+
+  test:
+    http:
+      path: /foo/health
+      host: test.simult.io
+      interval: 1s
+      timeout: 1s
+      fall: 3
+      rise: 2
+      resp: '{"status":"UP"}'
+
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
 
-### Jekyll Themes
+### More Information
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/simult/simult.github.io/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+You can find installation and configuration details on [simult](https://github.com/simult/simult). 
 
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
