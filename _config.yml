@@ -1,3 +1,4 @@
-theme: jekyll-theme-primer
+theme: jekyll-theme-minimal
 title: simult.io
 description: HTTP load balancer; easy configurable, full-featured and monitoring friendly
+show_downloads: true
