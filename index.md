@@ -12,10 +12,6 @@ It has designed to used with prometheus hence exports rich metrics.
 Simult can be configured with a yaml file and the new configuration can be applied on the fly. An example configuration yaml:
 
 ```markdown
-global:
-  rlimitnofile: 262144
-  promresetonreload: no
-
 defaults:
   tlsparams:
     certpath: ssl/
@@ -34,9 +30,7 @@ frontends:
         backend: empty
 
       - host: simult.server.io
-        path: "/actuator/*"
-      - host: simult.server.io
-        path: "/add/events/*"
+        path: "/category/brand/*"
         backend: shop
         backup: empty
       - host: simult.server.io
@@ -44,9 +38,7 @@ frontends:
         backup: empty
 
       - host: test.simult.io
-        path: "/actuator/*"
-      - host: test.simult.io
-        path: "/mail/hook/*"
+        path: "/foo/bar/*"
         backend: test
 
 backends:
